@@ -16,6 +16,6 @@ To set it up:
 To run the tests:
 
 ```
-bats test/*.bats
+bats test
 ```
 
