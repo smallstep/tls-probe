@@ -15,6 +15,10 @@ step certificate create localhost server.crt server.key \
     --ca ./intermediate-ca.crt --ca-key ./intermediate-ca.key \
     --not-after=100000h --bundle \
     --insecure --no-password --force
+step certificate create localhost server-expired.crt server-expired.key \
+    --ca ./intermediate-ca.crt --ca-key ./intermediate-ca.key \
+    --not-before=-24h --not-after=-1h --bundle \
+    --insecure --no-password --force
 rm root-ca.key
 chmod 664 *
 

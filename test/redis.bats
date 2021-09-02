@@ -94,3 +94,22 @@ teardown() {
 	[[ "${output}" =~ PONG ]]
 }
 
+@test "[redis] it's possible to connect to a server with an expired cert, if --insecure is used" {
+	docker run --rm -d --label tlsprobe=true \
+			--name $CONTAINER_NAME \
+			-p $PORT:$PORT \
+			-v $DIR/../certs-ecdsa:/run/secrets \
+			redis \
+				--tls-port $PORT --port 0 \
+				--tls-cert-file /run/secrets/server-expired.crt \
+				--tls-key-file /run/secrets/server-expired.key \
+				--tls-ca-cert-file /run/secrets/root-ca.crt \
+				--tls-auth-clients no
+	wait_for_socket
+	run docker exec -it \
+			${CONTAINER_NAME} redis-cli --tls --insecure \
+			--cacert /run/secrets/root-ca.crt ping
+	[[ "${output}" =~ PONG ]]
+}
+
+
