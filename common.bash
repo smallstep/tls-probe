@@ -15,6 +15,6 @@ wait_for_socket() {
 }
 
 docker_stop() {
-    docker ps --filter label=tlsspec -q | xargs docker stop 2>/dev/null
+    docker ps --filter label=tlsprobe -q | xargs docker stop 2>/dev/null
 }
 
