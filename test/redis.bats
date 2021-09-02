@@ -17,11 +17,11 @@ teardown() {
 			-p $PORT:$PORT \
 			-v $DIR/../certs-ecdsa:/run/secrets \
 			redis \
-			--tls-port $PORT --port 0 \
-			--tls-cert-file /run/secrets/server.crt \
-			--tls-key-file /run/secrets/server.key \
-			--tls-ca-cert-file /run/secrets/root-ca.crt \
-			--tls-auth-clients no
+				--tls-port $PORT --port 0 \
+				--tls-cert-file /run/secrets/server.crt \
+				--tls-key-file /run/secrets/server.key \
+				--tls-ca-cert-file /run/secrets/root-ca.crt \
+				--tls-auth-clients no
 	wait_for_socket
 	run docker exec -it \
 			${CONTAINER_NAME} redis-cli --tls \
@@ -35,11 +35,11 @@ teardown() {
 			-p $PORT:$PORT \
 			-v $DIR/../certs-rsa:/run/secrets \
 			redis \
-			--tls-port $PORT --port 0 \
-			--tls-cert-file /run/secrets/server.crt \
-			--tls-key-file /run/secrets/server.key \
-			--tls-ca-cert-file /run/secrets/root-ca.crt \
-			--tls-auth-clients no
+				--tls-port $PORT --port 0 \
+				--tls-cert-file /run/secrets/server.crt \
+				--tls-key-file /run/secrets/server.key \
+				--tls-ca-cert-file /run/secrets/root-ca.crt \
+				--tls-auth-clients no
 	wait_for_socket
 	run docker exec -it \
 			${CONTAINER_NAME} redis-cli --tls \
