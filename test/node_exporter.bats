@@ -47,7 +47,7 @@ teardown() {
 	step certificate verify https://localhost:$PORT --roots $DIR/../certs-rsa/root-ca.crt
 }
 
-@test "[node_exporter] cert files are read upon each request" {
+@test "[node_exporter] cert files are evaluated with each new request" {
 	# World readability is needed here so the container can read the certs
 	chmod 775 $BATS_TEST_TMPDIR
 
@@ -60,8 +60,14 @@ teardown() {
 		quay.io/prometheus/node-exporter:latest \
 		--web.config="/run/config/web-config.yml"
 	wait_for_socket
+
+	# see the RSA issuer
 	step certificate verify https://localhost:$PORT --roots $DIR/../certs-rsa/root-ca.crt
+
+	# replace the cert in the mount volume
 	cp $DIR/../certs-ecdsa/server.crt $DIR/../certs-ecdsa/server.key $BATS_TEST_TMPDIR
+
+	# see the ECDSA issuer
 	step certificate verify https://localhost:$PORT --roots $DIR/../certs-ecdsa/root-ca.crt
 }
 

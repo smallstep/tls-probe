@@ -47,7 +47,7 @@ teardown() {
     [[ "${output}" =~ PONG ]]
 }
 
-@test "[redis] cert files reloaded when the restart command is provided" {
+@test "[redis] cert files reloaded when the CONFIG SET command is provided" {
 	# World readability is needed here so the container can read the certs
 	chmod 775 $BATS_TEST_TMPDIR
 
