@@ -4,6 +4,7 @@ setup() {
 	load '../common'
 	DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
 	CONTAINER_NAME="tlsprobe_${BATS_SUITE_TEST_NUMBER}"
+	IMAGE_NAME="docker.io/redis/redis"
 	PORT=6379
 }
 
@@ -12,36 +13,36 @@ teardown() {
 }
 
 @test "[redis] with an EC cert chain, TLS is enabled" {
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 			--name "${CONTAINER_NAME}" \
 			-p $PORT:$PORT \
 			-v $DIR/../certs-ecdsa:/run/secrets \
-			redis \
+			$IMAGE_NAME \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server.crt \
 				--tls-key-file /run/secrets/server.key \
 				--tls-ca-cert-file /run/secrets/root-ca.crt \
 				--tls-auth-clients no
 	wait_for_socket
-	run docker exec -it \
+	run $DOCKER exec -it \
 			${CONTAINER_NAME} redis-cli --tls \
 			--cacert /run/secrets/root-ca.crt ping
 	[[ "${output}" =~ PONG ]]
 }
 
 @test "[redis] with an RSA cert chain, TLS is enabled" {
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 			--name $CONTAINER_NAME \
 			-p $PORT:$PORT \
 			-v $DIR/../certs-rsa:/run/secrets \
-			redis \
+			$IMAGE_NAME \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server.crt \
 				--tls-key-file /run/secrets/server.key \
 				--tls-ca-cert-file /run/secrets/root-ca.crt \
 				--tls-auth-clients no
 	wait_for_socket
-	run docker exec -it \
+	run $DOCKER exec -it \
 			${CONTAINER_NAME} redis-cli --tls \
 			--cacert /run/secrets/root-ca.crt ping
 	[[ "${output}" =~ PONG ]]
@@ -59,11 +60,11 @@ teardown() {
 	# to run the restart command.
 	cp $DIR/../certs-rsa/root-ca.crt $BATS_TEST_TMPDIR/root-ca-rsa.crt
 
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 			--name $CONTAINER_NAME \
 			-p $PORT:$PORT \
 			-v $BATS_TEST_TMPDIR:/run/secrets \
-			redis \
+			$IMAGE_NAME \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server.crt \
 				--tls-key-file /run/secrets/server.key \
@@ -73,7 +74,7 @@ teardown() {
 	wait_for_socket
 
 	# 0. test the old certs
-	run docker exec -it \
+	run $DOCKER exec -it \
 			$CONTAINER_NAME redis-cli --tls \
 			--cacert /run/secrets/root-ca-rsa.crt ping
 	[[ "${output}" =~ PONG ]]
@@ -83,11 +84,11 @@ teardown() {
 	cp $DIR/../certs-ecdsa/root-ca.crt $BATS_TEST_TMPDIR
 
 	# 2. notify Redis
-	CERT_FILE=$(docker exec -it $CONTAINER_NAME redis-cli --tls --cacert /run/secrets/root-ca-rsa.crt --raw config get tls-cert-file | tail -n1)
-	docker exec -it $CONTAINER_NAME redis-cli --tls --cacert /run/secrets/root-ca-rsa.crt config set tls-cert-file ${CERT_FILE//[$'\r\n']}
+	CERT_FILE=$($DOCKER exec -it $CONTAINER_NAME redis-cli --tls --cacert /run/secrets/root-ca-rsa.crt --raw config get tls-cert-file | tail -n1)
+	$DOCKER exec -it $CONTAINER_NAME redis-cli --tls --cacert /run/secrets/root-ca-rsa.crt config set tls-cert-file ${CERT_FILE//[$'\r\n']}
 
 	# 3. test the new certs
-	run docker exec -it \
+	run $DOCKER exec -it \
 			${CONTAINER_NAME} redis-cli \
 				 --tls \
 				--cacert /run/secrets/root-ca.crt ping
@@ -95,18 +96,18 @@ teardown() {
 }
 
 @test "[redis] it's possible to connect to a server with an expired cert, if --insecure is used" {
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 			--name $CONTAINER_NAME \
 			-p $PORT:$PORT \
 			-v $DIR/../certs-ecdsa:/run/secrets \
-			redis \
+			$IMAGE_NAME \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server-expired.crt \
 				--tls-key-file /run/secrets/server-expired.key \
 				--tls-ca-cert-file /run/secrets/root-ca.crt \
 				--tls-auth-clients no
 	wait_for_socket
-	run docker exec -it \
+	run $DOCKER exec -it \
 			${CONTAINER_NAME} redis-cli --tls --insecure \
 			--cacert /run/secrets/root-ca.crt ping
 	[[ "${output}" =~ PONG ]]

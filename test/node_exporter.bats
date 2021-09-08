@@ -4,6 +4,7 @@ setup() {
 	load '../common'
 	DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
 	CONTAINER_NAME="tlsprobe_${BATS_SUITE_TEST_NUMBER}"
+	IMAGE_NAME="quay.io/prometheus/node-exporter:latest"
 	PORT=9100
 }
 
@@ -12,37 +13,37 @@ teardown() {
 }
 
 @test "[node_exporter] without a cert, TLS is disabled" {
-	docker run --rm -d -p $PORT:$PORT --label tlsprobe=true --name "${CONTAINER_NAME}" \
-			quay.io/prometheus/node-exporter:latest 
+	$DOCKER run --rm -d -p $PORT:$PORT --label tlsprobe=true --name "${CONTAINER_NAME}" \
+			${IMAGE_NAME}
 	wait_for_socket
-	run docker logs	$(docker ps --filter "name=${CONTAINER_NAME}" -q)
+	run $DOCKER logs $($DOCKER ps --filter "name=${CONTAINER_NAME}" -q)
 	assert_output --partial 'TLS is disabled.'
 }
 
 @test "[node_exporter] with an EC cert chain, TLS is enabled" {
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 			--name "${CONTAINER_NAME}" \
 			-p $PORT:$PORT \
 			-v $DIR/node_exporter:/run/config \
 			-v $DIR/../certs-ecdsa:/run/secrets \
-			quay.io/prometheus/node-exporter:latest \
+			${IMAGE_NAME} \
 				--web.config="/run/config/web-config.yml"
 	wait_for_socket
-	run docker logs	$(docker ps --filter "name=${CONTAINER_NAME}" -q)
+	run $DOCKER logs	$($DOCKER ps --filter "name=${CONTAINER_NAME}" -q)
 	assert_output --partial 'TLS is enabled.'
 	step certificate verify https://localhost:$PORT --roots $DIR/../certs-ecdsa/root-ca.crt
 }
 
 @test "[node_exporter] with an RSA cert chain, TLS is enabled" {
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 		--name "${CONTAINER_NAME}" \
 		-p $PORT:$PORT \
 		-v $DIR/node_exporter:/run/config \
 		-v $DIR/../certs-rsa:/run/secrets \
-		quay.io/prometheus/node-exporter:latest \
+		${IMAGE_NAME} \
 			--web.config="/run/config/web-config.yml"
 	wait_for_socket
-	run docker logs	$(docker ps --filter "name=${CONTAINER_NAME}" -q)
+	run $DOCKER logs $($DOCKER ps --filter "name=${CONTAINER_NAME}" -q)
 	assert_output --partial 'TLS is enabled.'
 	step certificate verify https://localhost:$PORT --roots $DIR/../certs-rsa/root-ca.crt
 }
@@ -52,12 +53,12 @@ teardown() {
 	chmod 775 $BATS_TEST_TMPDIR
 
 	cp $DIR/../certs-rsa/server.crt $DIR/../certs-rsa/server.key $BATS_TEST_TMPDIR
-	docker run --rm -d --label tlsprobe=true \
+	$DOCKER run --rm -d --label tlsprobe=true \
 		--name "${CONTAINER_NAME}" \
 		-p $PORT:$PORT \
 		-v $DIR/node_exporter:/run/config \
 		-v $BATS_TEST_TMPDIR:/run/secrets \
-		quay.io/prometheus/node-exporter:latest \
+		${IMAGE_NAME} \
 			--web.config="/run/config/web-config.yml"
 	wait_for_socket
 
