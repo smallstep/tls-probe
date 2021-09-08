@@ -4,7 +4,7 @@ setup() {
 	load '../common'
 	DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
 	CONTAINER_NAME="tlsprobe_${BATS_SUITE_TEST_NUMBER}"
-	IMAGE_NAME="docker.io/redis/redis"
+	IMAGE_NAME="docker.io/redis"
 	PORT=6379
 }
 
@@ -17,7 +17,7 @@ teardown() {
 			--name "${CONTAINER_NAME}" \
 			-p $PORT:$PORT \
 			-v $DIR/../certs-ecdsa:/run/secrets \
-			$IMAGE_NAME \
+			$IMAGE_NAME redis-server \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server.crt \
 				--tls-key-file /run/secrets/server.key \
@@ -35,7 +35,7 @@ teardown() {
 			--name $CONTAINER_NAME \
 			-p $PORT:$PORT \
 			-v $DIR/../certs-rsa:/run/secrets \
-			$IMAGE_NAME \
+			$IMAGE_NAME redis-server \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server.crt \
 				--tls-key-file /run/secrets/server.key \
@@ -64,7 +64,7 @@ teardown() {
 			--name $CONTAINER_NAME \
 			-p $PORT:$PORT \
 			-v $BATS_TEST_TMPDIR:/run/secrets \
-			$IMAGE_NAME \
+			$IMAGE_NAME redis-server \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server.crt \
 				--tls-key-file /run/secrets/server.key \
@@ -100,7 +100,7 @@ teardown() {
 			--name $CONTAINER_NAME \
 			-p $PORT:$PORT \
 			-v $DIR/../certs-ecdsa:/run/secrets \
-			$IMAGE_NAME \
+			$IMAGE_NAME redis-server \
 				--tls-port $PORT --port 0 \
 				--tls-cert-file /run/secrets/server-expired.crt \
 				--tls-key-file /run/secrets/server-expired.key \
