@@ -17,6 +17,8 @@ wait_for_socket() {
 }
 
 docker_stop() {
-    $DOCKER ps --filter label=tlsprobe -q | xargs $DOCKER stop 2>/dev/null
+	set +o pipefail
+	$DOCKER ps --filter label=tlsprobe -q | xargs $DOCKER stop 2>/dev/null
+	set -o pipefail	
 }
 
