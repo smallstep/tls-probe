@@ -50,6 +50,20 @@ teardown() {
 	step certificate verify https://localhost:$PORT --roots $DIR/../certs-rsa/root-ca.crt
 }
 
+@test "[mongo] when a CA is not specified, server auth TLS is enabled" {
+	$DOCKER run --rm -d --label tlsprobe=true \
+			--name "${CONTAINER_NAME}" \
+			-p $PORT:$PORT \
+			-v $DIR/../certs-ecdsa:/run/secrets \
+			${IMAGE_NAME} \
+				--tlsMode requireTLS \
+				--tlsCertificateKeyFile /run/secrets/server-merged.pem
+	wait_for_socket
+	run $DOCKER logs $($DOCKER ps --filter "name=${CONTAINER_NAME}" -q)
+	assert_output --partial '"ssl":"on"'
+	step certificate verify https://localhost:$PORT --roots $DIR/../certs-ecdsa/root-ca.crt
+}
+
 @test "[mongo] cert files are evaluated when rotateCertificates is called" {
 	# https://docs.mongodb.com/v5.0/reference/command/rotateCertificates/
 	# { rotateCertificates: 1,
@@ -122,4 +136,13 @@ teardown() {
 		
 }
 
+@test "[mongo] mongod trusts root CAs from the Web PKI when --tlsCAFile is not specified" {
+    skip
+	# One way to test this is to get a Let's Encrypt cert,
+	# and try using it as a client certificate connecting to a MongoDB instance.
+}
+
+@test "[mongo] mongod does NOT trust root CAs from the Web PKI when --tlsCAFile is specified" {
+    skip
+}
 
