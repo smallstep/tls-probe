@@ -8,8 +8,7 @@ Questions thses tests should test on common TLS-supporting services & clients:
 * Server certificate types supported:
   * ECDSA chains?
   * RSA chains?
-* Specific server cert format requirements
-  * eg. special OIDs or subject DNs
+* Specific server cert format requirements * eg. special OIDs or subject DNs
 * Client TLS support:
   * Are server certificates validated, or are invalid server certs silently accepted (encryption only)?
   * Is OCSP supported?
@@ -33,11 +32,27 @@ To set it up:
   npm install -g bats
   npm install
   bash ./makecerts.sh
+  bash ./docker_build.sh
   ```
 
-To run the tests:
+- Start the fileserver:
 
-```
-bats test
-```
+  ```
+  step fileserver --address 127.0.0.1:8443 \
+                  --cert certs-ecdsa/server.crt \
+	              --key certs-ecdsa/server.key \
+	              --address 0.0.0.0:8443 fileserver
+  ```
+
+  In another window, run the tests:
+
+  ```
+  bats test
+  ```
+
+- Cleanup:
+
+  ```
+  docker rmi -f $(docker image ls -f tag=tlsprobe)
+  ```
 

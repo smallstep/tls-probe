@@ -4,7 +4,6 @@ setup() {
 	load '../common'
 	DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
 	CONTAINER_NAME="tlsprobe_${BATS_SUITE_TEST_NUMBER}"
-	PORT=27017
 }
 
 teardown() {

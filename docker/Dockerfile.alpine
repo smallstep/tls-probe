@@ -1,0 +1,3 @@
+FROM smallstep/step-cli as step
+FROM alpine:latest
+COPY --from=step /usr/local/bin/step /usr/local/bin/

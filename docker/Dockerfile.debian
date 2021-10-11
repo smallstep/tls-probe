@@ -1,0 +1,3 @@
+FROM smallstep/step-cli as step
+FROM debian:latest
+COPY --from=step /usr/local/bin/step /usr/local/bin/
