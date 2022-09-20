@@ -1,6 +1,6 @@
 # TLS spec suite
 
-A set of tests for TLS.
+This is a test suite written with the goal of understanding undocumented TLS implementation details of various open source services.
 
 ## Scope
 
